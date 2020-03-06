@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=s, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+
+</body>
+<script type='text/javascript'>
+    var o = {
+        name: '林松',
+        age: 100,
+        learn: [{ name: '数学' }, { name: '语文' }, { name: '计算机' }],
+        work: {
+            label: '房天下',
+            value: '0001'
+        }
+    }
+
+
+    function reactive(targe, name, value, enumerable) {
+        Object.defineProperty(targe, name, {
+            configurable: true,
+            enumerable: enumerable,
+            get() {
+                console.log('获取了' + name)
+                return value;
+            },
+            set(newval) {
+                console.log('设置了' + name)
+                value = newval;
+            }
+        })
+    }
+
+    function attrReactive(data) {
+        let keys = Object.keys(data)
+        keys.map(item => {
+
+            let _value = data[item]
+            // 判断一下 如果是数组或者对象使用递归 绑定子元素
+            let itemType = Object.prototype.toString.call(_value);
+            if (itemType === '[object Array]') {
+                // 数组
+                let ARRAY_METHOD = [
+                    'push',
+                    'pop',
+                    'shift',
+                    'unshift',
+                    'sort',
+                    'reverse',
+                    'splice'
+                ]
+                // 数组中的方法需要重新 不然操作数组后的数据不是响应式
+
+                let array_methods = Object.create(Array.prototype)
+                ARRAY_METHOD.map(key => {
+                    array_methods[key] = function () {
+                        console.log('运行了自定义的' + key + '方法')
+                        for (let index = 0; index < arguments.length; index++) {
+                            const element = arguments[index];
+                            attrReactive(element)
+                        }
+                        let res = Array.prototype[key].apply(this, arguments)
+                        return res
+                    }
+                })
+                _value.__proto__ = array_methods
+                _value.map(x => {
+                    attrReactive(x)
+                })
+            }
+            else if (itemType === '[object Object]') {
+                attrReactive(_value)
+            }
+            else {
+                reactive(data, item, _value, true)
+            }
+        })
+    }
+
+
+    attrReactive(o)
+
+</script>
+
+</html>

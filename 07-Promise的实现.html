@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+
+</body>
+
+</html>
+<script type='text/javascript'>
+    const PENDING = 'PENDING'
+    const FULFILLED = 'FULFILLED'
+    const REJECTED = 'REJECTED'
+    const isFunction = handle => typeof handle === 'function'
+    class MyPromise {
+        constructor(handle) {
+            if (!isFunction) {
+                throw new Error('MyPromise must accept a function as a parameter')
+            }
+            this._status = PENDING
+
+            this._value = undefined
+            // 添加成功回调函数队列
+            this._fulfilledQueues = []
+            // 添加失败回调函数队列
+            this._rejectedQueues = []
+            try {
+                handle(this._resolve.bind(this), this._reject().bind(this))
+            } catch (error) {
+                this._reject(error)
+            }
+        }
+        _resolve(val) {
+            if (this._status != PENDING) { return }
+            this._status = FULFILLED
+            this._value = val
+        }
+        _reject(val) {
+            if (this._status != PENDING) { return }
+            this._status = REJECTED
+            this._value = val
+        }
+        then(onFulfilled, onRejected) {
+            const { _value, _status } = this
+            switch (_status) {
+                // 当状态为PENDING时候 将then方法回调函数加入执行队列等待执行
+                case PENDING:
+                    this._fulfilledQueues.push(onFulfilled)
+                    this._rejectedQueues.push(onRejected)
+                    break;
+                case FULFILLED:
+                    onFulfilled(_value);
+                    break;
+                case REJECTED:
+                    onRejected(_value);
+                    break;
+            }
+            return new MyPromise((onFulfilledNext, onRejectedNext) => { })
+        }
+    }
+</script>

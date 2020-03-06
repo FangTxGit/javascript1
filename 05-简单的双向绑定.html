@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+    <div id="root">
+        <span>{{name}}</span>
+        <span>{{age}}</span>
+    </div>
+</body>
+
+</html>
+<script type='text/javascript'>
+
+
+    class LSVue {
+        constructor(options) {
+            this._el = options.el
+            this._data = options.data
+            this._reg = /\{\{(.+)\}\}/g
+            this.templateHtml = document.querySelector(this._el)
+            this.parentNodeDom = document.querySelector(this._el).parentNode
+            this.init()
+            this.render()
+        }
+        init() {
+            if (this._data) {
+                Object.keys(this._data).map(x => {
+                    const _key = x
+                    const _value = this._data[x]
+                    this.Observer(this._data, _key, _value, true)
+                })
+            }
+
+        }
+        render() {
+            let _templateHtml = this.templateHtml.cloneNode(this)
+
+            const _newTemlateHtml = this.compile(_templateHtml)
+
+            console.log(_newTemlateHtml)
+            this.parentNodeDom.replaceChild(_newTemlateHtml, document.querySelector(this._el))
+        }
+        compile(templateHtml) {
+            const childNodes = templateHtml.childNodes
+            for (let index = 0; index < childNodes.length; index++) {
+                const child = childNodes[index];
+                const type = child.nodeType
+                if (type === 3) {
+                    const _value = child.nodeValue
+                    const _newHtml = _value.replace(this._reg, (_, g) => {
+                        return this._data[g]
+                    })
+                    child.nodeValue = _newHtml
+                }
+                else if (type === 1) {
+                    this.compile(child)
+                }
+            }
+            return templateHtml
+        }
+        Observer(targe, key, value, enumerable) {
+            var that = this
+            Object.defineProperty(targe, key, {
+                enumerable: !!enumerable,
+                configurable: true,
+                get() {
+                    console.log('获取了' + value)
+                    return value
+                },
+                set(newval) {
+                    console.log('设置了' + value)
+                    value = newval
+                    that.render()
+                }
+            })
+        }
+    }
+</script>
+<script type='text/javascript'>
+    var app = new LSVue({
+        el: '#root',
+        data: {
+            name: '林松',
+            age: 18
+        },
+    })
+</script>

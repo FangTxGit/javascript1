@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+
+</body>
+
+</html>
+<script type='text/javascript'>
+    const _obj = {
+        name: '张三',
+        age: 12,
+        a: {
+            b: {
+                c: {
+                    d: {
+                        text: '测试'
+                    }
+                }
+            }
+        }
+    }
+    function objType(value) {
+        const type = Object.prototype.toString.call(value)
+        switch (type) {
+            case '[object Object]':
+                return 'Object'
+            case '[object Array]':
+                return 'Array'
+            default:
+                return 'number';
+        }
+    }
+
+    function copyObject(obj) {
+        const type = objType(obj)
+
+        if (type === 'number') {
+            return obj
+        } else {
+            const _copy = type === 'Object' ? {} : []
+            for (const element in obj) {
+                _copy[element] = copyObject(obj[element])
+            }
+            return _copy
+        }
+
+    }
+    var p = [{ a: 1, b: 3 }, { c: 4, j: 7 }]
+
+    const _newobj = copyObject(p)
+
+    console.log(_newobj)
+</script>
